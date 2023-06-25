@@ -7,12 +7,10 @@ RUN apt-get install -y build-essential git autoconf libtool pkg-config \
                        zlib1g-dev libzstd-dev libbrotli-dev libidn2-dev libnghttp2-dev
 
 # Build quictls
+ARG QUICTLS_GIT_TAG
 WORKDIR /src
-ENV OPENSSL_DIRNAME=openssl-1.1.1u-quic
-RUN git clone -b OpenSSL_1_1_1u+quic --depth 1 \
-        https://github.com/quictls/openssl \
-        $OPENSSL_DIRNAME
-WORKDIR /src/$OPENSSL_DIRNAME
+RUN git clone -b $QUICTLS_GIT_TAG --depth 1 https://github.com/quictls/openssl
+WORKDIR /src/openssl
 RUN ./config no-shared enable-tls1_3 \
     --prefix=/usr --openssldir=/usr/lib/ssl --libdir=lib/$(uname -m)-linux-gnu \
     no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms
@@ -20,8 +18,9 @@ RUN make -j
 RUN make install
 
 # Build nghttp3
+ARG NGHTTP3_GIT_TAG
 WORKDIR /src
-RUN git clone --depth 1 -b v0.12.0 https://github.com/ngtcp2/nghttp3
+RUN git clone --depth 1 -b $NGHTTP3_GIT_TAG https://github.com/ngtcp2/nghttp3
 WORKDIR /src/nghttp3
 RUN autoreconf -fi
 RUN ./configure --prefix=/usr --libdir=/usr/lib/$(uname -m)-linux-gnu --enable-lib-only --disable-shared
@@ -29,8 +28,9 @@ RUN make -j
 RUN make install
 
 # Build ngtcp2
+ARG NGTCP2_GIT_TAG
 WORKDIR /src
-RUN git clone --depth 1 -b v0.15.0 https://github.com/ngtcp2/ngtcp2
+RUN git clone --depth 1 -b $NGTCP2_GIT_TAG https://github.com/ngtcp2/ngtcp2
 WORKDIR /src/ngtcp2
 RUN autoreconf -fi
 RUN ./configure --prefix=/usr --libdir=/usr/lib/$(uname -m)-linux-gnu --with-libnghttp3 --with-openssl --enable-lib-only --disable-shared
@@ -38,19 +38,20 @@ RUN make -j
 RUN make install
 
 # Build curl
+ARG CURL_GIT_TAG
 WORKDIR /src
-RUN git clone --depth 1 -b curl-8_1_2 https://github.com/curl/curl
+RUN git clone --depth 1 -b $CURL_GIT_TAG https://github.com/curl/curl
 WORKDIR /src/curl
 RUN autoreconf -fi
 RUN PKG_CONFIG_PATH="$PWD/../nghttp3/lib:$PWD/../ngtcp2/lib:$PWD/../ngtcp2/crypto/openssl" ./configure --prefix=/usr --with-ssl=/usr --with-nghttp3=/usr --with-ngtcp2=/usr --disable-shared --enable-alt-svc --enable-versioned-symbols
 RUN make -j V=1
 RUN make install
 
-#ENTRYPOINT ["/usr/bin/curl"]
-
+ARG DEB_VERSION
 RUN apt-get install -y dpkg
 RUN mkdir -p /curl-quictls/DEBIAN /curl-quictls/usr/bin
-COPY control /curl-quictls/DEBIAN/
+COPY control.tmpl /src/
+RUN sed "s/@DEB_VERSION@/$DEB_VERSION/;s/@INSTALLED_SIZE@/$(ls -l /usr/bin/curl | awk '{print int($5 / 1024)}')/" /src/control.tmpl > /curl-quictls/DEBIAN/control
 RUN install /usr/bin/curl /curl-quictls/usr/bin/curlq
 WORKDIR /
 RUN dpkg-deb --build curl-quictls
