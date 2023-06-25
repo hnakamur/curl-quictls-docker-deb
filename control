@@ -1,0 +1,21 @@
+Package: curl-quictls
+Version: 8.1.2+dep.1-1ppa1~ubuntu22.04
+Architecture: amd64
+Maintainer: Hiroaki Nakamura <hnakamur@gmail.com>
+Installed-Size: 6282
+Depends: libc6 (>= 2.34), libcurl4 (= 7.81.0-1ubuntu1.10), zlib1g (>= 1:1.1.4), libnghttp2-14
+Section: web
+Priority: optional
+Multi-Arch: foreign
+Vcs-Git: https://github.com/hnakamur/curl-quictls-deb.git
+Vcs-Browser: https://github.com/hnakamur/curl-quictls-deb
+Homepage: https://curl.haxx.se
+Description: command line tool for transferring data with URL syntax
+ curl is a command line tool for transferring data with URL syntax, supporting
+ DICT, FILE, FTP, FTPS, GOPHER, HTTP, HTTPS, IMAP, IMAPS, LDAP, LDAPS, POP3,
+ POP3S, RTMP, RTSP, SCP, SFTP, SMTP, SMTPS, TELNET and TFTP.
+ .
+ curl supports SSL certificates, HTTP POST, HTTP PUT, FTP uploading, HTTP form
+ based upload, proxies, cookies, user+password authentication (Basic, Digest,
+ NTLM, Negotiate, kerberos...), file transfer resume, proxy tunneling and a
+ busload of other useful tricks.

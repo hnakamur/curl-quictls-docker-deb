@@ -46,4 +46,13 @@ RUN PKG_CONFIG_PATH="$PWD/../nghttp3/lib:$PWD/../ngtcp2/lib:$PWD/../ngtcp2/crypt
 RUN make -j V=1
 RUN make install
 
-ENTRYPOINT ["/usr/bin/curl"]
+#ENTRYPOINT ["/usr/bin/curl"]
+
+RUN apt-get install -y dpkg
+RUN mkdir -p /curl-quictls/DEBIAN /curl-quictls/usr/bin
+COPY control /curl-quictls/DEBIAN/
+RUN install /usr/bin/curl /curl-quictls/usr/bin/curlq
+WORKDIR /
+RUN dpkg-deb --build curl-quictls
+
+ENTRYPOINT ["/bin/bash"]
