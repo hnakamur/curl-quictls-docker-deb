@@ -1,5 +1,5 @@
 IMAGE_NAME      = curl-quictls-deb
-DEB_VERSION     = 8.1.2+dep.1-1ppa1~ubuntu22.04
+DEB_VERSION     = 8.1.2+dep.1-1ppa1ubuntu22.04
 CURL_GIT_TAG    = curl-8_1_2
 QUICTLS_GIT_TAG = OpenSSL_1_1_1u+quic
 NGHTTP3_GIT_TAG = v0.12.0
