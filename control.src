@@ -1,9 +1,6 @@
-Package: curl-quictls
-Version: @DEB_VERSION@
-Architecture: amd64
+Source: curl-quictls
 Maintainer: Hiroaki Nakamura <hnakamur@gmail.com>
-Installed-Size: @INSTALLED_SIZE@
-Depends: @DEPENDS@
+Depends: debhelper (>= 10)
 Section: web
 Priority: optional
 Multi-Arch: foreign

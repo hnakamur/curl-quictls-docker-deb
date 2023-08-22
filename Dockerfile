@@ -43,16 +43,21 @@ WORKDIR /src
 RUN git clone --depth 1 -b $CURL_GIT_TAG https://github.com/curl/curl
 WORKDIR /src/curl
 RUN autoreconf -fi
-RUN PKG_CONFIG_PATH="$PWD/../nghttp3/lib:$PWD/../ngtcp2/lib:$PWD/../ngtcp2/crypto/openssl" ./configure --prefix=/usr --with-ssl=/usr --with-nghttp3=/usr --with-ngtcp2=/usr --disable-shared --enable-alt-svc --enable-versioned-symbols
+RUN PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig" ./configure --prefix=/usr --with-ssl=/usr --with-nghttp3=/usr --with-ngtcp2=/usr --disable-shared --enable-alt-svc --enable-versioned-symbols
 RUN make -j V=1
 RUN make install
 
 ARG DEB_VERSION
 RUN apt-get install -y dpkg
+
 RUN mkdir -p /curl-quictls/DEBIAN /curl-quictls/usr/bin
-COPY control.tmpl /src/
-RUN sed "s/@DEB_VERSION@/$DEB_VERSION/;s/@INSTALLED_SIZE@/$(ls -l /usr/bin/curl | awk '{print int($5 / 1024)}')/" /src/control.tmpl > /curl-quictls/DEBIAN/control
 RUN install /usr/bin/curl /curl-quictls/usr/bin/curlq
+
+COPY control.src /src/curl/debian/control
+RUN dpkg-shlibdeps -Tsubstvars /curl-quictls/usr/bin/curlq
+
+COPY control.tmpl /src/
+RUN sed "s/@DEB_VERSION@/$DEB_VERSION/;s/@INSTALLED_SIZE@/$(ls -l /usr/bin/curl | awk '{print int($5 / 1024)}')/;s/@DEPENDS@/$(cut -d = -f 2- /src/curl/substvars)/" /src/control.tmpl > /curl-quictls/DEBIAN/control
 WORKDIR /
 RUN dpkg-deb --build curl-quictls
 
